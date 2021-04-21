@@ -47,7 +47,7 @@ public class ClientWithoutSecurity {
 			//toServer.flush();
 
 			// Open the file
-			fileInputStream = new FileInputStream(filename);
+			fileInputStream = new FileInputStream("PA2/100.txt");
 			bufferedFileInputStream = new BufferedInputStream(fileInputStream);
 
 	        byte [] fromFileBuffer = new byte[117];
@@ -73,4 +73,6 @@ public class ClientWithoutSecurity {
 		long timeTaken = System.nanoTime() - timeStarted;
 		System.out.println("Program took: " + timeTaken/1000000.0 + "ms to run");
 	}
+
+
 }
