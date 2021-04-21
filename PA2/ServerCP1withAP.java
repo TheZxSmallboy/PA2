@@ -35,7 +35,7 @@ public class ServerCP1withAP {
         Socket connectionSocket = null;
         DataOutputStream toClient = null;
         DataInputStream fromClient = null;
-
+        long timeStarted = 0;
         FileOutputStream fileOutputStream = null;
         BufferedOutputStream bufferedFileOutputStream = null;
 
@@ -53,6 +53,7 @@ public class ServerCP1withAP {
                 if (packetType == 0) {
 
                     System.out.println("Receiving file...");
+                    timeStarted = System.nanoTime();
                     int numBytes = fromClient.readInt();
                     byte [] filename = new byte[numBytes];
                     // Must use read fully!
@@ -81,6 +82,8 @@ public class ServerCP1withAP {
                     if (numBytes < 117 && filesreceived < numberoffiles) {
                         filesreceived++;
                         System.out.println("File "+filesreceived+" received fully, closing...");
+                        long timeTaken = System.nanoTime() - timeStarted;
+                        System.out.println("Program took: " + timeTaken/1000000.0 + "ms to receive file");
                         if (bufferedFileOutputStream != null) bufferedFileOutputStream.close();
                         if (bufferedFileOutputStream != null) fileOutputStream.close();}
 
