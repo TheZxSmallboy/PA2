@@ -1,4 +1,7 @@
 # PA2
+Wang Zixuan and Tang En Jie
+
+## Instructions on how to run the code
 1. Start the terminal at the directory of the folder
 2. Using 2 terminals, compile the server and client of the protocol wanted by calling javac ClientCP1withAP.java and javac ServerCP1withAP.java(Replace CP1 with CP2 for CP2 Protocol)
 3. Afterwards, run the server first by calling java ServerCP1withAP
