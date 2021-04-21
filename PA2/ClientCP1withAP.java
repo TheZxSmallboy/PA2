@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.Socket;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
@@ -61,11 +62,13 @@ public class ClientCP1withAP {
 
             System.out.println("Asking for authentication...");
 
-            // asking to prove its identity, with writeInt
-            String initialisationmessage = "123456";
+            //  asking to prove its identity, with writeInt
+            byte[] nonce = new byte[12];
+            new SecureRandom().nextBytes(nonce);
             toServer.writeInt(2);
-            toServer.writeInt(initialisationmessage.getBytes().length);
-            toServer.write(initialisationmessage.getBytes());
+            toServer.writeInt(nonce.length);
+            toServer.write(nonce);
+
 
             // wait for the server's response before proceeding
             while (responsemessage == null) {
@@ -127,7 +130,7 @@ public class ClientCP1withAP {
             System.out.println("The decrypted message sent by the server is " + messagetocheck);
 
             // if it is correct, continue to send the files to the server
-            if (messagetocheck.equals("123456")) {
+            if (Arrays.equals(decryptedmessage,nonce)) {
                 System.out.println("The message is correct and identical");
                 toServer.writeInt(11);
                 toServer.writeInt(numberoffiles);
