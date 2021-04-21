@@ -62,7 +62,7 @@ public class ServerCP1withAP {
                     rsacipher.init(Cipher.DECRYPT_MODE, privateKey);
                     decryptedblock = rsacipher.doFinal(filename);
                     String decryptedFileName = new String(decryptedblock);
-                    fileOutputStream = new FileOutputStream("recv_"+decryptedFileName);
+                    fileOutputStream = new FileOutputStream("receiving\\recv_"+decryptedFileName);
                     bufferedFileOutputStream = new BufferedOutputStream(fileOutputStream);
 
                     // If the packet is for transferring a chunk of the file

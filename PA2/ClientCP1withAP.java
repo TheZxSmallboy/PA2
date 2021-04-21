@@ -95,7 +95,7 @@ public class ClientCP1withAP {
                     numBytes = fromServer.readInt();
                     byte [] filename1 = new byte[numBytes];
                     fromServer.readFully(filename1, 0, numBytes);
-                    fileOutputStream = new FileOutputStream("recv_"+new String(filename1, 0, numBytes));
+                    fileOutputStream = new FileOutputStream("receiving\\recv_"+new String(filename1, 0, numBytes));
                     bufferedFileOutputStream = new BufferedOutputStream(fileOutputStream);
 
                 }else if (packetType == 1) {
@@ -114,7 +114,7 @@ public class ClientCP1withAP {
                 }
             }
             // the public key from the certificate of the Server, and verify it
-            InputStream fileInputStream1 = new FileInputStream("recv_certificate_1004448.crt");
+            InputStream fileInputStream1 = new FileInputStream("receiving\\recv_certificate_1004448.crt");
             CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
             X509Certificate ServerCertificate = (X509Certificate) (certificateFactory.generateCertificate(fileInputStream1));
             ServerCertificate.verify(key);
@@ -149,7 +149,7 @@ public class ClientCP1withAP {
                     toServer.write(encryptedblock);
 
                     //open the file
-                    fileInputStream = new FileInputStream("PA2\\"+filename);
+                    fileInputStream = new FileInputStream("sending\\"+filename);
                     bufferedFileInputStream = new BufferedInputStream(fileInputStream);
 
                     //send file

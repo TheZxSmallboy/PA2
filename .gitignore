@@ -1,3 +1,2 @@
-
-*.txt
+/receiving/*.*
 recv_certificate_1004448.crt
