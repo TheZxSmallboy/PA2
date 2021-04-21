@@ -88,6 +88,7 @@ public class ServerCP1withAP {
 
                     if (filesreceived == numberoffiles){
                         System.out.println("Closing connection...");
+                        toClient.writeInt(10);
                         fromClient.close();
                         toClient.close();
                         connectionSocket.close();}

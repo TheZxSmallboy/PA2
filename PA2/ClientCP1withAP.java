@@ -46,11 +46,12 @@ public class ClientCP1withAP {
 
 
         try {
-
+            String path = "D:\\GitHub\\PA2\\cacsertificate.crt";
+            // "D:\\GitHub\\PA2\\cacsertificate.crt"
             System.out.println("Establishing connection to server...");
 
             //get public key from the CA
-            InputStream fis = new FileInputStream("D:\\GitHub\\PA2\\cacsertificate.crt");
+            InputStream fis = new FileInputStream(path);
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             X509Certificate CAcert = (X509Certificate) cf.generateCertificate(fis);
             PublicKey key = CAcert.getPublicKey();
@@ -169,9 +170,10 @@ public class ClientCP1withAP {
                     }
                 }
                 System.out.println("All the files has been transferred");
-                System.out.println("Closing Connection");
                 bufferedFileInputStream.close();
                 fileInputStream.close();
+                while(fromServer.readInt()!=10);
+                System.out.println("Closing Connection");
 
             }
             else{
