@@ -22,15 +22,14 @@ public class ServerCP1withAP {
 
 
     public static void main(String[] args) throws Exception {
-        PrivateKey privateKey = PrivateKeyReader.get("D:\\GitHub\\PA2\\private_key.der");
-        PublicKey publicKey = PublicKeyReader.get("D:\\GitHub\\PA2\\public_key.der");
+        PrivateKey privateKey = PrivateKeyReader.get("private_key.der");
+        PublicKey publicKey = PublicKeyReader.get("public_key.der");
         byte [] decryptedblock = null;
 
         int filesreceived =0;
         int numberoffiles =0;
 
         int port = 4321;
-        if (args.length > 0) port = Integer.parseInt(args[0]);
 
         ServerSocket welcomeSocket = null;
         Socket connectionSocket = null;
@@ -49,7 +48,6 @@ public class ServerCP1withAP {
             while (!connectionSocket.isClosed()) {
 
                 int packetType = fromClient.readInt();
-                //System.out.println(packetType);
 
                 // If the packet is for transferring the filename
                 if (packetType == 0) {
@@ -155,12 +153,11 @@ public class ServerCP1withAP {
 
                 }}
                     else if (packetType==11) {
-                        numberoffiles = fromClient.readInt();
-                        System.out.println("Number of files: "+numberoffiles);
+                    numberoffiles = fromClient.readInt();
+                    System.out.println("Number of files: " + numberoffiles);
                 }
                 }
 
         } catch (Exception e) {e.printStackTrace();}
-
     }
 }

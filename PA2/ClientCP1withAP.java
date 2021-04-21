@@ -46,12 +46,10 @@ public class ClientCP1withAP {
 
 
         try {
-            String path = "D:\\GitHub\\PA2\\cacsertificate.crt";
-            // "D:\\GitHub\\PA2\\cacsertificate.crt"
             System.out.println("Establishing connection to server...");
 
             //get public key from the CA
-            InputStream fis = new FileInputStream(path);
+            InputStream fis = new FileInputStream("cacsertificate.crt");
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             X509Certificate CAcert = (X509Certificate) cf.generateCertificate(fis);
             PublicKey key = CAcert.getPublicKey();
@@ -89,7 +87,6 @@ public class ClientCP1withAP {
             toServer.writeInt(2);
             toServer.writeInt(CAmessage.getBytes().length);
             toServer.write(CAmessage.getBytes());
-
             //proceed only when the Server has provided the CA
             boolean CAprovided = true;
             while(CAprovided){
@@ -152,7 +149,7 @@ public class ClientCP1withAP {
                     toServer.write(encryptedblock);
 
                     //open the file
-                    fileInputStream = new FileInputStream("D:\\GitHub\\PA2\\PA2\\"+filename);
+                    fileInputStream = new FileInputStream("PA2\\"+filename);
                     bufferedFileInputStream = new BufferedInputStream(fileInputStream);
 
                     //send file

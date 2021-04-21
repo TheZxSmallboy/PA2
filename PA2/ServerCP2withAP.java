@@ -8,22 +8,21 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 public class ServerCP2withAP {
 
         public static void main(String[] args) throws Exception {
-            PrivateKey privateKey = PrivateKeyReader.get("D:\\GitHub\\PA2\\private_key.der");
-            PublicKey publicKey = PublicKeyReader.get("D:\\GitHub\\PA2\\public_key.der");
+            PrivateKey privateKey = PrivateKeyReader.get("private_key.der");
+            PublicKey publicKey = PublicKeyReader.get("public_key.der");
             byte [] decryptedblock = null;
 
             int filesreceived =0;
             int numberoffiles =0;
 
             int port = 4321;
-            if (args.length > 0) port = Integer.parseInt(args[0]);
 
             ServerSocket welcomeSocket = null;
             Socket connectionSocket = null;
@@ -43,7 +42,6 @@ public class ServerCP2withAP {
                 while (!connectionSocket.isClosed()) {
 
                     int packetType = fromClient.readInt();
-                    System.out.println(packetType);
 
                     // If the packet is for transferring the filename
                     if (packetType == 0) {
@@ -55,20 +53,20 @@ public class ServerCP2withAP {
                         // See: https://stackoverflow.com/questions/25897627/datainputstream-read-vs-datainputstream-readfully
                         fromClient.readFully(filename, 0, numBytes);
 
-                        Cipher symmetryCipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+                        Cipher symmetryCipher = Cipher.getInstance("AES");
                         symmetryCipher.init(Cipher.DECRYPT_MODE, symmetryKey);
                         decryptedblock = symmetryCipher.doFinal(filename);
-
-                        fileOutputStream = new FileOutputStream("recv_"+new String(filename, 0, numBytes));
+                        String decryptedFileName = new String(decryptedblock);
+                        fileOutputStream = new FileOutputStream("recv_"+decryptedFileName);
                         bufferedFileOutputStream = new BufferedOutputStream(fileOutputStream);
 
                         // If the packet is for transferring a chunk of the file
                     } else if (packetType == 1) {
-
-                        int numBytes = fromClient.readInt();
-                        byte [] block = new byte[numBytes];
-                        fromClient.readFully(block, 0, numBytes);
-                        Cipher symmetryCipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+                        int numBytes = fromClient.readInt(); // get num of bytes of decrypted
+                        int encryptedBytes = fromClient.readInt(); // get num of bytes of encrypted
+                        byte [] block = new byte[encryptedBytes];
+                        fromClient.readFully(block, 0, encryptedBytes);
+                        Cipher symmetryCipher = Cipher.getInstance("AES");
                         symmetryCipher.init(Cipher.DECRYPT_MODE,symmetryKey);
 
                         if (numBytes > 0){
@@ -77,11 +75,13 @@ public class ServerCP2withAP {
 
                         if (numBytes < 128 && filesreceived < numberoffiles) {
                             filesreceived++;
+                            System.out.println("File "+filesreceived+" received fully, closing...");
                             if (bufferedFileOutputStream != null) bufferedFileOutputStream.close();
                             if (bufferedFileOutputStream != null) fileOutputStream.close();}
 
                         if (filesreceived == numberoffiles){
                             System.out.println("Closing connection...");
+                            toClient.writeInt(10);
                             fromClient.close();
                             toClient.close();
                             connectionSocket.close();}
@@ -159,7 +159,8 @@ public class ServerCP2withAP {
                         byte[] decodedKey = rsaCipher.doFinal(symmetryKeyFile);
 
                         //how to decode from byte back to symmetry key?
-                        symmetryKey = decodedKey.
+                        System.out.println("Symmetry Key acquired");
+                        symmetryKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
                     }
 
                     else if (packetType==11) {

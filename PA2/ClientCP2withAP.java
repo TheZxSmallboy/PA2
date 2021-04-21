@@ -7,8 +7,10 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.Socket;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -26,7 +28,6 @@ public class ClientCP2withAP {
 
         String serverAddress = "localhost";
         int port = 4321;
-        //if (args.length > 2) port = Integer.parseInt(args[2]);
 
         Socket clientSocket = null;
 
@@ -45,7 +46,7 @@ public class ClientCP2withAP {
             System.out.println("Establishing connection to server...");
 
             //get public key from the CA
-            InputStream fis = new FileInputStream("D:\\GitHub\\PA2\\cacsertificate.crt");
+            InputStream fis = new FileInputStream("cacsertificate.crt");
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             X509Certificate CAcert = (X509Certificate) cf.generateCertificate(fis);
             PublicKey key = CAcert.getPublicKey();
@@ -58,11 +59,13 @@ public class ClientCP2withAP {
 
             System.out.println("Asking for authentication...");
 
-            // asking to prove its identity, with writeInt
-            String initialisationmessage = "123456";
+            //  asking to prove its identity, with writeInt
+            byte[] nonce = new byte[12];
+            new SecureRandom().nextBytes(nonce);
             toServer.writeInt(2);
-            toServer.writeInt(initialisationmessage.getBytes().length);
-            toServer.write(initialisationmessage.getBytes());
+            toServer.writeInt(nonce.length);
+            toServer.write(nonce);
+
 
             // wait for the server's response before proceeding
             while (responsemessage == null) {
@@ -82,7 +85,6 @@ public class ClientCP2withAP {
             toServer.writeInt(2);
             toServer.writeInt(CAmessage.getBytes().length);
             toServer.write(CAmessage.getBytes());
-
             //proceed only when the Server has provided the CA
             boolean CAprovided = true;
             while(CAprovided){
@@ -101,11 +103,12 @@ public class ClientCP2withAP {
                     if (numBytes > 0){
                         bufferedFileOutputStream.write(block, 0, numBytes);
                     }
-                    if (numBytes < 128) {
+                    if (numBytes < 117) {
                         if (bufferedFileOutputStream != null) bufferedFileOutputStream.close();
                         if (bufferedFileOutputStream != null) fileOutputStream.close();
                         CAprovided = false;
                     }
+
                 }
             }
             // the public key from the certificate of the Server, and verify it
@@ -122,14 +125,14 @@ public class ClientCP2withAP {
             String messagetocheck = new String(decryptedmessage);
             System.out.println("The decrypted message sent by the server is " + messagetocheck);
 
-            // if correct, continue
-            if(messagetocheck.equals("123456")){
+            // if it is correct, continue to send the files to the server
+            if (Arrays.equals(decryptedmessage,nonce)) {
 
                 //give the total number of files to server
                 toServer.writeInt(11);
                 toServer.writeInt(numberoffiles);
 
-                KeyGenerator keyGen = KeyGenerator.getInstance("AES/ECB/PKCS5Padding");
+                KeyGenerator keyGen = KeyGenerator.getInstance("AES");
                 keyGen.init(128);
                 SecretKey symmetryKey = keyGen.generateKey();
 
@@ -144,7 +147,7 @@ public class ClientCP2withAP {
 
                 // Encrypt all the files using the symmetry key
                 System.out.println("Uploading files to server");
-                Cipher symmetryCipher = Cipher.getInstance("AES/ECB/PCS5Padding");
+                Cipher symmetryCipher = Cipher.getInstance("AES");
                 symmetryCipher.init(Cipher.ENCRYPT_MODE, symmetryKey);
                 byte[] encryptedFile = null;
                 byte[] fromFileBuffer = new byte[128];
@@ -158,7 +161,7 @@ public class ClientCP2withAP {
                     toServer.write(encryptedFile);
 
                     //open the file
-                    fileInputStream = new FileInputStream(filename);
+                    fileInputStream = new FileInputStream("PA2\\"+filename);
                     bufferedFileInputStream = new BufferedInputStream(fileInputStream);
 
                     //send file
@@ -166,16 +169,20 @@ public class ClientCP2withAP {
                         numBytes = bufferedFileInputStream.read(fromFileBuffer);
                         encryptedFile = symmetryCipher.doFinal(fromFileBuffer);
                         fileEnded = numBytes < 128;
-
+                        if (fileEnded) {
+                            System.out.println("Reached end of file "+(i+1));
+                        }
                         toServer.writeInt(1);
                         toServer.writeInt(numBytes);
+                        toServer.writeInt(encryptedFile.length); // send num of bytes of encrypted
                         toServer.write(encryptedFile);
                     }
                 }
                 System.out.println("All the files has been transferred");
-                System.out.println("Closing Connection");
                 bufferedFileInputStream.close();
                 fileInputStream.close();
+                while(fromServer.readInt()!=10);
+                System.out.println("Closing Connection");
             }
             else{
                 System.out.println("Closing connection");
