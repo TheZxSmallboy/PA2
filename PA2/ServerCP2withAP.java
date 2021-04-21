@@ -159,7 +159,7 @@ public class ServerCP2withAP {
                         byte[] decodedKey = rsaCipher.doFinal(symmetryKeyFile);
 
                         //how to decode from byte back to symmetry key?
-                        symmetryKey = decodedKey.
+//                        symmetryKey = decodedKey.
                     }
 
                     else if (packetType==11) {
